@@ -13,15 +13,17 @@ const TMDB_KEY = process.env.TMDB_API_KEY;
 // Allowed frontend URLs
 const FRONTEND_URLS = [
   'http://localhost:5173', // Local frontend
-  'https://movie-finder-six-sigma.vercel.app', // Deployed frontend on Vercel
+  'https://movie-finder-emmhpn2dz-inchara-manjunaths-projects.vercel.app', // Your deployed frontend on Vercel
 ];
 
 // CORS setup
 const corsOptions = {
   origin: function (origin, callback) {
+    // Allow requests with no origin (e.g., Postman)
     if (!origin || FRONTEND_URLS.includes(origin)) {
       callback(null, true);
     } else {
+      console.warn('Blocked by CORS:', origin);
       callback(new Error('Not allowed by CORS'));
     }
   },
@@ -50,8 +52,12 @@ function saveStore() {
 
 // Helper: fetch from TMDb
 async function tmdbFetch(pathSuffix) {
-  const url = `https://api.themoviedb.org/3${pathSuffix}&api_key=${TMDB_KEY}`;
+  // Add ? or & depending if path already has ?
+  const url = pathSuffix.includes('?') 
+    ? `https://api.themoviedb.org/3${pathSuffix}&api_key=${TMDB_KEY}`
+    : `https://api.themoviedb.org/3${pathSuffix}?api_key=${TMDB_KEY}`;
   const res = await fetch(url);
+  if (!res.ok) throw new Error(`TMDb fetch failed: ${res.status}`);
   return res.json();
 }
 
