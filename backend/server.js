@@ -1,24 +1,19 @@
 require('dotenv').config();
 const express = require('express');
 const fetch = (...args) => import('node-fetch').then(({default: f}) => f(...args));
-const corsOptions = {
-  origin: process.env.FRONTEND_URL || '*', // use your frontend URL in production
-};
-app.use(cors(corsOptions));
-
+const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
 
-const app = express();
+const app = express();  // ✅ Initialize app first
+
 const PORT = process.env.PORT || 4000;
 const TMDB_KEY = process.env.TMDB_API_KEY;
+const FRONTEND_URL = process.env.FRONTEND_URL || '*';
 
-if (!TMDB_KEY) {
-  console.error('Missing TMDB_API_KEY in environment');
-  process.exit(1);
-}
-
-app.use(cors());
+// CORS setup
+const corsOptions = { origin: FRONTEND_URL }
+app.use(cors(corsOptions));
 app.use(express.json());
 
 // Simple in-memory user prefs (zip code) + optional file persistence
