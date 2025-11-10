@@ -37,27 +37,26 @@ Output images:
 
 ## **Setup Instructions (Development)**
 
-### **Backend**
-
 ```bash
+#backend
 cd backend
 cp .env.example .env
 # Add your TMDb API key in .env
 npm install
 npm run dev
 
-###** frontend **
+#frontend
 cd ../frontend
 npm install
 npm run dev
 
-**Environment Variables**
-**Backend .env**
+Environment Variables
+Backend .env
 TMDB_API_KEY=your_tmdb_api_key_here
 PORT=4000
 FRONTEND_URL=http://localhost:5173
 
-**Frontend .env**
+Frontend .env
 VITE_BACKEND_URL=http://localhost:4000/api
 
 
