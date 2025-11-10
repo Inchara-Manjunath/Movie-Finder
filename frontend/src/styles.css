@@ -1,0 +1,140 @@
+/* Header adjustments */
+.site-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 40px;
+  background: linear-gradient(180deg, rgba(0,0,0,0.8), rgba(0,0,0,0.4));
+  position: sticky;
+  top: 0;
+  z-index: 40;
+}
+
+/* Search form styling */
+.search-form {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-grow: 1;
+  max-width: 400px;
+  margin: 0 20px;
+}
+
+.search-form input {
+  padding: 10px 14px;
+  border-radius: 6px;
+  border: none;
+  width: 100%;
+  font-size: 1rem;
+  outline: none;
+  background: #222;
+  color: #fff;
+}
+
+.search-form input::placeholder {
+  color: #aaa;
+}
+
+.search-form button {
+  padding: 10px 20px;
+  background-color: #e50914; /* Netflix red */
+  border: none;
+  border-radius: 6px;
+  color: #fff;
+  font-weight: bold;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.search-form button:hover {
+  background-color: #f6121d;
+  transform: scale(1.05);
+}
+
+/* Header buttons: Wishlist & Like */
+.header-buttons {
+  display: flex;
+  gap: 12px;
+}
+
+.header-buttons button {
+  padding: 8px 14px;
+  border-radius: 6px;
+  border: none;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.wishlist-btn {
+  background-color: #444;
+  color: #fff;
+}
+
+.wishlist-btn:hover {
+  background-color: #666;
+  transform: scale(1.05);
+}
+
+.like-btn {
+  background-color: #444;
+  color: #fff;
+}
+
+.like-btn:hover {
+  background-color: #666;
+  transform: scale(1.05);
+}
+
+.card-buttons {
+  margin-top: 6px;
+  display: flex;
+  gap: 8px;
+}
+
+.card-buttons button {
+  background: rgba(0,0,0,0.6);
+  color: #fff;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  transition: background 0.2s ease;
+}
+
+.card-buttons button:hover {
+  background: rgba(255,0,20,0.8);
+}
+
+
+/* Dark Netflix-like theme */
+:root{ --bg:#0b0b0f; --card:#111; --muted:#bfc3c8; --accent:#e50914 }
+*{box-sizing:border-box}
+body{ margin:0; font-family: Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial; background:var(--bg); color:#fff }
+.app-dark main{ padding:28px 40px }
+.site-header{ display:flex; align-items:center; justify-content:space-between; padding:12px 40px; background:linear-gradient(180deg, rgba(0,0,0,0.8), rgba(0,0,0,0.4)); position:sticky; top:0; z-index:40 }
+.brand{ font-weight:700; font-size:1.4rem; color:var(--accent) }
+.zip-form{ display:flex; gap:8px; align-items:center }
+.zip-form input{ padding:8px 10px; border-radius:6px; border:none; width:110px }
+.zip-form button{ padding:8px 10px; background:var(--accent); border:none; border-radius:6px; color:#fff }
+.row{ margin-bottom:28px }
+.row h2{ margin:0 0 12px 0; font-size:1.1rem }
+.row-posters{ display:flex; gap:10px; overflow-x:auto; padding-bottom:8px }
+.card{ min-width:170px; transition: transform 220ms ease, box-shadow 220ms ease; position:relative; cursor:pointer }
+.card img{ width:170px; height:255px; object-fit:cover; border-radius:6px }
+.card:hover{ transform: translateY(-8px) scale(1.03); box-shadow:0 20px 30px rgba(0,0,0,0.7) }
+.card-hover{ position:absolute; inset:auto 0 0 0; padding:8px; background:linear-gradient(180deg, rgba(0,0,0,0), rgba(0,0,0,0.8)); border-bottom-left-radius:6px; border-bottom-right-radius:6px; opacity:0; transition: opacity 160ms }
+.card:hover .card-hover{ opacity:1 }
+.card .title{ font-size:0.9rem }
+.card .rating{ font-size:0.8rem; color:var(--muted) }
+.modal-overlay{ position:fixed; inset:0; background:rgba(0,0,0,0.7); display:flex; align-items:center; justify-content:center; z-index:60 }
+.modal{ width:90%; max-width:1000px; background:linear-gradient(180deg, rgba(10,10,12,0.95), rgba(8,8,10,0.98)); border-radius:12px; overflow:hidden; position:relative }
+.backdrop{ height:220px; background-size:cover; background-position:center }
+.modal-close{ position:absolute; right:14px; top:14px; background:transparent; color:#fff; border:none; font-size:1.2rem }
+.modal-body{ display:flex; gap:20px; padding:18px }
+.modal-poster{ width:220px; border-radius:8px }
+.modal-info h2{ margin:0 }
+.modal-info .tagline{ color:var(--muted); margin-top:6px }
+.modal-info .overview{ margin-top:12px; color:#ddd }
