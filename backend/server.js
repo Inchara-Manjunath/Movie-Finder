@@ -1,18 +1,31 @@
 require('dotenv').config();
 const express = require('express');
-const fetch = (...args) => import('node-fetch').then(({default: f}) => f(...args));
+const fetch = (...args) => import('node-fetch').then(({ default: f }) => f(...args));
 const cors = require('cors');
 const fs = require('fs');
 const path = require('path');
 
-const app = express();  // ✅ Initialize app first
+const app = express(); // Initialize app first
 
 const PORT = process.env.PORT || 4000;
 const TMDB_KEY = process.env.TMDB_API_KEY;
-const FRONTEND_URL = process.env.FRONTEND_URL || '*';
+
+// Allowed frontend URLs
+const FRONTEND_URLS = [
+  'http://localhost:5173', // Local frontend
+  'https://movie-finder-six-sigma.vercel.app', // Deployed frontend on Vercel
+];
 
 // CORS setup
-const corsOptions = { origin: FRONTEND_URL }
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin || FRONTEND_URLS.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
+};
 app.use(cors(corsOptions));
 app.use(express.json());
 
@@ -23,21 +36,30 @@ try {
   if (fs.existsSync(DATA_FILE)) {
     store = JSON.parse(fs.readFileSync(DATA_FILE));
   }
-} catch (err) { console.warn('Could not read data file', err); }
+} catch (err) {
+  console.warn('Could not read data file', err);
+}
 
 function saveStore() {
-  try { fs.writeFileSync(DATA_FILE, JSON.stringify(store, null, 2)); } catch (err) { console.warn('Could not write data file', err); }
+  try {
+    fs.writeFileSync(DATA_FILE, JSON.stringify(store, null, 2));
+  } catch (err) {
+    console.warn('Could not write data file', err);
+  }
 }
 
-// Helper: fetch TMDb
+// Helper: fetch from TMDb
 async function tmdbFetch(pathSuffix) {
   const url = `https://api.themoviedb.org/3${pathSuffix}&api_key=${TMDB_KEY}`;
-  const r = await fetch(url);
-  return r.json();
+  const res = await fetch(url);
+  return res.json();
 }
 
-// Endpoints
-// rows: trending, popular, top_rated, now_playing
+// =======================
+// Routes
+// =======================
+
+// Movie rows: trending, popular, top_rated, now_playing
 app.get('/api/row/:type', async (req, res) => {
   try {
     const { type } = req.params;
@@ -67,7 +89,7 @@ app.get('/api/row/:type', async (req, res) => {
   }
 });
 
-// Search
+// Search movies
 app.get('/api/search', async (req, res) => {
   try {
     const q = req.query.q || '';
@@ -95,7 +117,7 @@ app.get('/api/movie/:id', async (req, res) => {
   }
 });
 
-// Zip code endpoints: store user's zip by a client-provided id (e.g., simple session id)
+// Zip code storage
 app.post('/api/zipcode', (req, res) => {
   try {
     const { clientId, zip } = req.body;
@@ -115,4 +137,7 @@ app.get('/api/zipcode/:clientId', (req, res) => {
   res.json({ entry });
 });
 
-app.listen(PORT, '0.0.0.0', () => console.log(`TMDb proxy & prefs server running on http://localhost:${PORT}`));
+// Start server
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`TMDb proxy & prefs server running on http://localhost:${PORT}`);
+});
