@@ -22,11 +22,14 @@ const defaultOrigins = [
   'http://localhost:3000',
 ];
 const allowedOrigins = Array.from(new Set([...defaultOrigins, ...envOrigins]));
+const permissiveDomainSuffixes = ['.netlify.app', '.vercel.app'];
 
 const corsOptions = {
   origin: function (origin, callback) {
     // allow requests with no origin (mobile apps, curl) or whitelisted origins
-    if (!origin || allowedOrigins.includes(origin)) {
+    const isExplicitlyAllowed = origin && allowedOrigins.includes(origin);
+    const isPermissiveDomain = origin && permissiveDomainSuffixes.some(sfx => origin.endsWith(sfx));
+    if (!origin || isExplicitlyAllowed || isPermissiveDomain) {
       callback(null, true);
     } else {
       console.log('❌ Blocked by CORS:', origin);
