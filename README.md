@@ -54,10 +54,10 @@ Environment Variables
 Backend .env
 TMDB_API_KEY=your_tmdb_api_key_here
 PORT=4000
-FRONTEND_URL=http://localhost:5173
+FRONTEND_URL= // your frontend url after deploying on netlify
 
 Frontend .env
-VITE_BACKEND_URL=http://localhost:4000/api
+VITE_BACKEND_URL= // your backend code after deploying on render
 
 
 
