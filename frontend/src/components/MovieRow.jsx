@@ -5,7 +5,11 @@ export default function MovieRow({ type, title, onSelect, movies: propsMovies })
   const [movies, setMovies] = useState([])
 
   // Set API base URL for development and production
-  const API_BASE = import.meta.env.VITE_BACKEND_URL || '/api'
+  const API_BASE =
+  import.meta.env.VITE_BACKEND_URL ||
+  (import.meta.env.DEV
+    ? 'http://localhost:4000/api'
+    : 'https://movie-finder-2-3rwn.onrender.com/api')
 
   useEffect(() => {
     if (propsMovies) {
