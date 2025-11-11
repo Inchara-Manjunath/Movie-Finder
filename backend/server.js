@@ -13,25 +13,31 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
 
 // ✅ CORS setup
-const allowedOrigins = [
-  "http://localhost:5173",
-  "http://localhost:3000",
-  "https://movie-finder-rv2j-jy3194we6-inchara-manjunaths-projects.vercel.app" // your current Vercel frontend
+const envOrigins = (process.env.FRONTEND_URL || '')
+  .split(',')
+  .map(o => o.trim())
+  .filter(Boolean);
+const defaultOrigins = [
+  'http://localhost:5173',
+  'http://localhost:3000',
 ];
+const allowedOrigins = Array.from(new Set([...defaultOrigins, ...envOrigins]));
 
-app.use(cors({
+const corsOptions = {
   origin: function (origin, callback) {
-    // allow requests with no origin (like mobile apps or curl)
+    // allow requests with no origin (mobile apps, curl) or whitelisted origins
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
-      console.log("❌ Blocked by CORS:", origin);
-      callback(new Error("Not allowed by CORS"));
+      console.log('❌ Blocked by CORS:', origin);
+      callback(new Error('Not allowed by CORS'));
     }
   },
-  methods: ["GET", "POST", "PUT", "DELETE"],
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true,
-}));
+};
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
 app.use(json());
 
 // ✅ Environment variables
@@ -71,15 +77,9 @@ async function tmdbFetch(pathSuffix) {
   return r.json();
 }
 
-// ✅ Redirect /row/... → /api/row/... for frontend compatibility
-app.get('/row/:type', (req, res) => {
-  const query = req._parsedUrl.search || '';
-  res.redirect(`/api/row/${req.params.type}${query}`);
-});
-
 // ✅ Endpoints
 // rows: trending, popular, top_rated, now_playing
-app.get('/api/row/:type', async (req, res) => {
+async function handleRow(req, res) {
   try {
     const { type } = req.params;
     const page = req.query.page || 1;
@@ -108,7 +108,11 @@ app.get('/api/row/:type', async (req, res) => {
     console.error(err);
     res.status(500).json({ error: 'Server error' });
   }
-});
+}
+
+app.get('/api/row/:type', handleRow);
+// Alias to support existing frontend calls without /api prefix
+app.get('/row/:type', handleRow);
 
 // ✅ Search endpoint
 app.get('/api/search', async (req, res) => {
