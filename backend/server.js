@@ -12,7 +12,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const app = express();
 
-// ✅ CORS setup
+//CORS setup
 const envOrigins = (process.env.FRONTEND_URL || '')
   .split(',')
   .map(o => o.trim())
@@ -43,7 +43,7 @@ app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
 app.use(json());
 
-// ✅ Environment variables
+// Environment variables
 const PORT = process.env.PORT || 4000;
 const TMDB_KEY = process.env.TMDB_API_KEY;
 
@@ -52,7 +52,7 @@ if (!TMDB_KEY) {
   process.exit(1);
 }
 
-// ✅ Simple in-memory data store
+// Simple in-memory data store
 const DATA_FILE = join(__dirname, 'data.json');
 let store = { zipCodes: {} };
 try {
@@ -71,7 +71,7 @@ function saveStore() {
   }
 }
 
-// ✅ Helper: fetch TMDb
+// Helper: fetch TMDb
 async function tmdbFetch(pathSuffix) {
   // If pathSuffix already has ?, add &api_key=, else ?api_key=
   const connector = pathSuffix.includes('?') ? '&' : '?';
@@ -80,7 +80,7 @@ async function tmdbFetch(pathSuffix) {
   return r.json();
 }
 
-// ✅ Endpoints
+// Endpoints
 // rows: trending, popular, top_rated, now_playing
 async function handleRow(req, res) {
   try {
@@ -115,7 +115,7 @@ async function handleRow(req, res) {
 
 app.get('/api/row/:type', handleRow);
 
-// ✅ Search endpoint
+// Search endpoint
 app.get('/api/search', async (req, res) => {
   try {
     const q = req.query.q || '';
@@ -131,7 +131,7 @@ app.get('/api/search', async (req, res) => {
   }
 });
 
-// ✅ Movie details
+// Movie details
 app.get('/api/movie/:id', async (req, res) => {
   try {
     const id = req.params.id;
@@ -144,7 +144,7 @@ app.get('/api/movie/:id', async (req, res) => {
   }
 });
 
-// ✅ Zip code endpoints
+// Zip code endpoints
 app.post('/api/zipcode', (req, res) => {
   try {
     const { clientId, zip } = req.body;
@@ -165,7 +165,7 @@ app.get('/api/zipcode/:clientId', (req, res) => {
   res.json({ entry });
 });
 
-// ✅ Server start
+// Server start
 app.listen(PORT, '0.0.0.0', () => {
   console.log(`🚀 TMDb proxy & prefs server running on http://localhost:${PORT}`);
 });
