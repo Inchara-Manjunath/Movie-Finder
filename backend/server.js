@@ -2,14 +2,22 @@ require('dotenv').config();
 import express, { json } from 'express';
 import cors from 'cors';
 import { existsSync, readFileSync, writeFileSync } from 'fs';
-import { join } from 'path';
+import { join, dirname } from 'path';
+import { fileURLToPath } from 'url';
 const fetch = (...args) => import('node-fetch').then(({ default: f }) => f(...args));
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const app = express();
 
+
 // ✅ CORS setup
 const corsOptions = {
-  origin: process.env.FRONTEND_URL || '*', // allow your frontend in prod, all origins in dev
+  origin: [
+    "https://movie-finder-yjj6-57bt1vpnk-inchara-manjunaths-projects.vercel.app",
+    "http://localhost:5173",
+    "http://localhost:3000"
+  ],
   methods: ['GET', 'POST', 'PUT', 'DELETE'],
   credentials: true,
 };
@@ -46,10 +54,18 @@ function saveStore() {
 
 // ✅ Helper: fetch TMDb
 async function tmdbFetch(pathSuffix) {
-  const url = `https://api.themoviedb.org/3${pathSuffix}&api_key=${TMDB_KEY}`;
+  // If pathSuffix already has ?, add &api_key=, else ?api_key=
+  const connector = pathSuffix.includes('?') ? '&' : '?';
+  const url = `https://api.themoviedb.org/3${pathSuffix}${connector}api_key=${TMDB_KEY}`;
   const r = await fetch(url);
   return r.json();
 }
+
+// ✅ Redirect /row/... → /api/row/... for frontend compatibility
+app.get('/row/:type', (req, res) => {
+  const query = req._parsedUrl.search || '';
+  res.redirect(`/api/row/${req.params.type}${query}`);
+});
 
 // ✅ Endpoints
 // rows: trending, popular, top_rated, now_playing
