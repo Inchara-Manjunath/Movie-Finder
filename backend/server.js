@@ -1,15 +1,16 @@
-require('dotenv').config();
-import express, { json } from 'express';
-import cors from 'cors';
-import { existsSync, readFileSync, writeFileSync } from 'fs';
-import { join, dirname } from 'path';
-import { fileURLToPath } from 'url';
-const fetch = (...args) => import('node-fetch').then(({ default: f }) => f(...args));
+import dotenv from "dotenv";
+dotenv.config();
+
+import express, { json } from "express";
+import cors from "cors";
+import { existsSync, readFileSync, writeFileSync } from "fs";
+import { join, dirname } from "path";
+import { fileURLToPath } from "url";
+const fetch = (...args) => import("node-fetch").then(({ default: f }) => f(...args));
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const app = express();
-
 
 // ✅ CORS setup
 const corsOptions = {
