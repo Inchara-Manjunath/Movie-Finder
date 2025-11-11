@@ -22,7 +22,7 @@ const defaultOrigins = [
   'http://localhost:3000',
 ];
 const allowedOrigins = Array.from(new Set([...defaultOrigins, ...envOrigins]));
-const permissiveDomainSuffixes = ['.netlify.app', '.vercel.app'];
+const permissiveDomainSuffixes = ['.netlify.app'];
 
 const corsOptions = {
   origin: function (origin, callback) {
@@ -36,8 +36,8 @@ const corsOptions = {
       callback(new Error('Not allowed by CORS'));
     }
   },
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  credentials: true,
+  methods: ['GET', 'POST'],
+  credentials: false,
 };
 app.use(cors(corsOptions));
 app.options('*', cors(corsOptions));
@@ -114,8 +114,6 @@ async function handleRow(req, res) {
 }
 
 app.get('/api/row/:type', handleRow);
-// Alias to support existing frontend calls without /api prefix
-app.get('/row/:type', handleRow);
 
 // ✅ Search endpoint
 app.get('/api/search', async (req, res) => {
