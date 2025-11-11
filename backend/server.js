@@ -13,16 +13,25 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const app = express();
 
 // ✅ CORS setup
-const corsOptions = {
-  origin: [
-    "https://movie-finder-yjj6-57bt1vpnk-inchara-manjunaths-projects.vercel.app",
-    "http://localhost:5173",
-    "http://localhost:3000"
-  ],
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:3000",
+  "https://movie-finder-rv2j-jy3194we6-inchara-manjunaths-projects.vercel.app" // your current Vercel frontend
+];
+
+app.use(cors({
+  origin: function (origin, callback) {
+    // allow requests with no origin (like mobile apps or curl)
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.log("❌ Blocked by CORS:", origin);
+      callback(new Error("Not allowed by CORS"));
+    }
+  },
+  methods: ["GET", "POST", "PUT", "DELETE"],
   credentials: true,
-};
-app.use(cors(corsOptions));
+}));
 app.use(json());
 
 // ✅ Environment variables
