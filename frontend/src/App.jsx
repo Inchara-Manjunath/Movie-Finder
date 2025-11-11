@@ -22,7 +22,7 @@ export default function App() {
   import.meta.env.VITE_BACKEND_URL ||
   (import.meta.env.DEV
     ? 'http://localhost:4000/api'
-    : 'https://movie-finder-xinf.onrender.com/api')
+    : 'https://movie-finder-2-3rwn.onrender.com/api')
 
 
   // Load wishlist and liked IDs from localStorage
