@@ -18,7 +18,12 @@ export default function App() {
   const [wishlistMovies, setWishlistMovies] = useState([])
   const [likedMovies, setLikedMovies] = useState([])
 
-  const API_BASE = import.meta.env.VITE_BACKEND_URL || '/api'
+  const API_BASE =
+  import.meta.env.VITE_BACKEND_URL ||
+  (import.meta.env.DEV
+    ? 'http://localhost:4000/api'
+    : 'https://movie-finder-xinf.onrender.com/api')
+
 
   // Load wishlist and liked IDs from localStorage
   useEffect(() => {

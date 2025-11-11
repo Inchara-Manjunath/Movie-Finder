@@ -1,80 +1,63 @@
 require('dotenv').config();
-const express = require('express');
+import express, { json } from 'express';
+import cors from 'cors';
+import { existsSync, readFileSync, writeFileSync } from 'fs';
+import { join } from 'path';
 const fetch = (...args) => import('node-fetch').then(({ default: f }) => f(...args));
-const cors = require('cors');
-const fs = require('fs');
-const path = require('path');
 
 const app = express();
+
+// ✅ CORS setup
+const corsOptions = {
+  origin: process.env.FRONTEND_URL || '*', // allow your frontend in prod, all origins in dev
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  credentials: true,
+};
+app.use(cors(corsOptions));
+app.use(json());
+
+// ✅ Environment variables
 const PORT = process.env.PORT || 4000;
 const TMDB_KEY = process.env.TMDB_API_KEY;
 
-// =======================
-// CORS Configuration
-// =======================
-const FRONTEND_URLS = [
-  'http://localhost:5173',
-  'https://movie-finder-dnav-iozwq0v74-inchara-manjunaths-projects.vercel.app',
-];
+if (!TMDB_KEY) {
+  console.error('❌ Missing TMDB_API_KEY in environment');
+  process.exit(1);
+}
 
-const corsOptions = {
-  origin: (origin, callback) => {
-    if (!origin || FRONTEND_URLS.includes(origin)) {
-      callback(null, true);
-    } else {
-      console.warn('Blocked by CORS:', origin);
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-};
-
-app.use(cors(corsOptions));
-app.use(express.json());
-
-// =======================
-// Data Storage (ZIP codes)
-// =======================
-const DATA_FILE = path.join(__dirname, 'data.json');
+// ✅ Simple in-memory data store
+const DATA_FILE = join(__dirname, 'data.json');
 let store = { zipCodes: {} };
-
 try {
-  if (fs.existsSync(DATA_FILE)) {
-    store = JSON.parse(fs.readFileSync(DATA_FILE));
+  if (existsSync(DATA_FILE)) {
+    store = JSON.parse(readFileSync(DATA_FILE));
   }
 } catch (err) {
-  console.warn('Failed to read data file:', err);
+  console.warn('⚠️ Could not read data file', err);
 }
 
 function saveStore() {
   try {
-    fs.writeFileSync(DATA_FILE, JSON.stringify(store, null, 2));
+    writeFileSync(DATA_FILE, JSON.stringify(store, null, 2));
   } catch (err) {
-    console.warn('Failed to write data file:', err);
+    console.warn('⚠️ Could not write data file', err);
   }
 }
 
-// =======================
-// Helper: TMDb Fetch
-// =======================
+// ✅ Helper: fetch TMDb
 async function tmdbFetch(pathSuffix) {
-  const url = pathSuffix.includes('?')
-    ? `https://api.themoviedb.org/3${pathSuffix}&api_key=${TMDB_KEY}`
-    : `https://api.themoviedb.org/3${pathSuffix}?api_key=${TMDB_KEY}`;
-  const res = await fetch(url);
-  if (!res.ok) throw new Error(`TMDb fetch failed: ${res.status} ${res.statusText}`);
-  return res.json();
+  const url = `https://api.themoviedb.org/3${pathSuffix}&api_key=${TMDB_KEY}`;
+  const r = await fetch(url);
+  return r.json();
 }
 
-// =======================
-// Routes
-// =======================
-
-// Movie rows: trending, popular, top_rated, now_playing
+// ✅ Endpoints
+// rows: trending, popular, top_rated, now_playing
 app.get('/api/row/:type', async (req, res) => {
   try {
     const { type } = req.params;
     const page = req.query.page || 1;
-    let suffix;
+    let suffix = '';
 
     switch (type) {
       case 'trending':
@@ -87,4 +70,71 @@ app.get('/api/row/:type', async (req, res) => {
         suffix = `/movie/top_rated?language=en-US&page=${page}`;
         break;
       case 'now_playing':
-        suffix = `/movie/now_playing?language=en-US&page=${pa_
+        suffix = `/movie/now_playing?language=en-US&page=${page}`;
+        break;
+      default:
+        return res.status(400).json({ error: 'Unknown row type' });
+    }
+
+    const data = await tmdbFetch(suffix);
+    res.json(data);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// ✅ Search endpoint
+app.get('/api/search', async (req, res) => {
+  try {
+    const q = req.query.q || '';
+    const page = req.query.page || 1;
+    if (!q) return res.json({ results: [] });
+
+    const suffix = `/search/movie?language=en-US&query=${encodeURIComponent(q)}&page=${page}&include_adult=false`;
+    const data = await tmdbFetch(suffix);
+    res.json(data);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// ✅ Movie details
+app.get('/api/movie/:id', async (req, res) => {
+  try {
+    const id = req.params.id;
+    const suffix = `/movie/${id}?language=en-US&append_to_response=videos,credits`;
+    const data = await tmdbFetch(suffix);
+    res.json(data);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// ✅ Zip code endpoints
+app.post('/api/zipcode', (req, res) => {
+  try {
+    const { clientId, zip } = req.body;
+    if (!clientId || !zip) return res.status(400).json({ error: 'clientId and zip required' });
+
+    store.zipCodes[clientId] = { zip, updatedAt: new Date().toISOString() };
+    saveStore();
+    res.json({ ok: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+app.get('/api/zipcode/:clientId', (req, res) => {
+  const { clientId } = req.params;
+  const entry = store.zipCodes[clientId] || null;
+  res.json({ entry });
+});
+
+// ✅ Server start
+app.listen(PORT, '0.0.0.0', () => {
+  console.log(`🚀 TMDb proxy & prefs server running on http://localhost:${PORT}`);
+});
